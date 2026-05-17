@@ -1,0 +1,164 @@
+# Skill Router V2 — Minimal universal clusters
+#
+# This file ships with 4 universal clusters that apply to most engineering
+# workflows. For domain-specific clusters (finance, marketing, c-level,
+# vendor-specific integrations, etc.), see `clusters.example.yaml` for
+# inspiration and copy what you need into this file.
+#
+# How to add a cluster:
+#   1. Define `description` (1 line, what this cluster does)
+#   2. List `triggers_natural` (phrases you would say)
+#   3. List `skills` with exact names (matching SKILL.md `name:` field)
+#   4. Tune `confidence_threshold` (0.6-0.9 typical)
+#   5. Optional: set `gate: true` for blocking-style enforcement
+#   6. Re-run the router (no Claude Code restart needed)
+#
+# Optional fields per cluster:
+#   - keywords: list — extra hint strings for the matcher
+#   - paths: glob list — auto-activate when PreToolUse hits matching path
+#   - commands: list — auto-activate when Bash command matches prefix
+#   - tool_match: list — auto-activate on specific tool + input pattern
+#   - gate: bool — if true, blocks tool use until skill is invoked
+#   - gate_confidence: float — stricter threshold for gate activation
+#   - gate_reminder: text — message shown to the LLM when gate triggers
+#   - cwd_required: substring — only activate if cwd contains this string
+
+clusters:
+  code_implementation:
+    description: "React/Next.js component implementation, hooks, TSX/TS, server components"
+    triggers_natural:
+      - "implement the component"
+      - "create a Next page"
+      - "edit the TSX"
+      - "fix the useEffect hook"
+      - "build a server component"
+      - "refactor the component"
+    keywords:
+      - "react"
+      - "tsx"
+      - "jsx"
+      - "next.js"
+      - "next js"
+      - "component"
+      - "hooks"
+      - "useEffect"
+      - "server component"
+      - "client component"
+    # Conservative path matching to avoid false positives (validated in production):
+    # editing API endpoints / tests / internal libs should NOT trigger react-dev.
+    paths:
+      - "src/app/**/*.tsx"
+      - "src/app/**/page.ts"
+      - "src/app/**/layout.ts"
+      - "src/components/**/*.tsx"
+      - "src/components/**/*.ts"
+      - "src/hooks/**/*.ts"
+      - "**/*.tsx"
+    paths_exclude:
+      - "**/api/**"           # endpoints — backend code, NOT React
+      - "**/*.test.ts"        # test files — not production components
+      - "**/*.test.tsx"
+      - "**/*.spec.ts"
+      - "**/*.spec.tsx"
+      - "**/_lib/**"          # internal helpers
+      - "**/_utils/**"
+      - "**/node_modules/**"
+    skills:
+      - react-dev
+      - next-best-practices
+    confidence_threshold: 0.65
+    gate: false   # suggestion, not blocking
+    gate_reminder: |
+      Suggestion: invoke `react-dev` for typing/hooks and `next-best-practices`
+      for RSC/data patterns before editing src/app/**.
+
+  commit_push_pr:
+    description: "Create commits, push to remote, open/merge PRs — git write operations that touch history"
+    triggers_natural:
+      - "commit"
+      - "push to github"
+      - "open the PR"
+      - "create pull request"
+      - "merge the PR"
+      - "let's commit"
+    keywords:
+      - "commit"
+      - "push"
+      - "git add"
+      - "gh pr"
+      - "pull request"
+      - "merge"
+    commands:
+      - "git commit"
+      - "git push"
+      - "gh pr create"
+      - "gh pr merge"
+    skills:
+      - commit-work
+      - verification-before-completion
+    confidence_threshold: 0.85
+    gate: true
+    gate_confidence: 0.85
+    gate_reminder: |
+      Before commit/push/PR: invoke `verification-before-completion`
+      to confirm build/tests pass, then `commit-work` for a clean commit.
+
+  agent_dispatch_bg:
+    description: "Launch background agents, parallelize via Agent tool, dispatch subagents"
+    triggers_natural:
+      - "launch background agent"
+      - "agents in parallel"
+      - "background agent"
+      - "launch several agents"
+      - "parallel dispatch"
+    keywords:
+      - "background agent"
+      - "parallel agents"
+      - "launch agent"
+      - "dispatch"
+    tool_match:
+      - tool_name: Agent
+        tool_input_contains:
+          run_in_background: true
+    skills:
+      - superpowers:dispatching-parallel-agents
+      - superpowers:subagent-driven-development
+    confidence_threshold: 0.85
+    gate: true
+    gate_confidence: 0.85
+    gate_reminder: |
+      Before launching background agents: invoke
+      `dispatching-parallel-agents` to coordinate cleanly.
+      If you chain dependent tasks in the same session,
+      prefer `subagent-driven-development`.
+
+  worktree_ops:
+    description: "Cleanup, sync, or management of git worktrees and feature branches"
+    triggers_natural:
+      - "clean worktrees"
+      - "sync worktrees"
+      - "remove claude branches"
+      - "worktree management"
+    keywords:
+      - "worktree"
+      - "git worktree"
+    skills:
+      - worktree-sync-pro
+      - superpowers:using-git-worktrees
+    confidence_threshold: 0.8
+    gate: true
+    gate_confidence: 0.85
+    gate_reminder: |
+      Before removing worktrees: ensure a rescue push + backup tarball.
+      Always prefer `worktree-sync-pro` over manual `git worktree remove --force`.
+
+# Global router settings
+settings:
+  llm_model: "gemini-2.5-flash"   # Verified active (2026-may). Auto-fallback to gemini-flash-latest.
+  fallback_to_v1: true            # If LLM fails, fall back to regex V1
+  dedup_turns: 5                  # Don't re-suggest skill if invoked <N turns ago
+  min_prompt_words: 3             # Skip LLM call for trivial prompts
+  max_prompt_chars: 2000          # Truncate long prompts before LLM call
+  cache_ttl_seconds: 3600         # Cache LLM decisions for 1h (same prompt -> same answer)
+  log_level: "INFO"               # DEBUG | INFO | WARN | ERROR
+  cost_alert_threshold_usd: 1.0   # Warn if estimated monthly spend exceeds this
