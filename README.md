@@ -10,7 +10,7 @@
 
 - **What it does:** auto-detects which skill applies to your prompt and injects the full `SKILL.md` content into Claude Code's context, so the model follows the skill protocol without you (or it) having to call the `Skill` tool manually.
 - **Why it matters:** as your skill library grows (50, 100, 300+ skills), discovery breaks down. Manual `Skill("X")` calls clutter the chat, the model forgets they exist, and you lose the workflows you carefully designed. This router fixes that with deterministic detection + context injection + an optional gate.
-- **Install in one command:** `npx skills add David-CKS/claude-skill-router@router -g -y`
+- **Install in one command:** `npx skills add David-CKS/claude-skill-router@claude-skill-router -g -y`
 
 ## The problem it solves
 
@@ -38,7 +38,7 @@ This router solves it three ways:
 
 ```bash
 # 1. Pull the skill bundle from GitHub
-npx skills add David-CKS/claude-skill-router@router -g -y
+npx skills add David-CKS/claude-skill-router@claude-skill-router -g -y
 
 # 2. Wire up Claude Code hooks (idempotent)
 bash ~/.agents/skills/router/scripts/install.sh

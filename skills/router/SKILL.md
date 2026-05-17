@@ -23,7 +23,7 @@ Eliminates the noise of manual `Skill("X")` tool calls in chat. Replaces "model 
 
 ```bash
 # 1. Pull from marketplace
-npx skills add David-CKS/claude-skill-router@router -g -y
+npx skills add David-CKS/claude-skill-router@claude-skill-router -g -y
 
 # 2. Wire hooks (idempotent)
 bash ~/.agents/skills/router/scripts/install.sh

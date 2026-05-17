@@ -21,7 +21,7 @@ python3 -c "import yaml" 2>/dev/null || {
 
 if [[ ! -f "$TRIGGER" ]]; then
   err "trigger_v2.py not found at $TRIGGER"
-  err "Did you run 'npx skills add David-CKS/claude-skill-router@router -g -y'?"
+  err "Did you run 'npx skills add David-CKS/claude-skill-router@claude-skill-router -g -y'?"
   exit 1
 fi
 chmod +x "$TRIGGER" 2>/dev/null || true

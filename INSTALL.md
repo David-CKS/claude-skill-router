@@ -24,7 +24,7 @@ Optional for advanced features:
 
 ```bash
 # 1. Pull the skill bundle from the marketplace
-npx skills add David-CKS/claude-skill-router@router -g -y
+npx skills add David-CKS/claude-skill-router@claude-skill-router -g -y
 
 # 2. Run the install script (idempotent — safe to re-run)
 bash ~/.agents/skills/router/scripts/install.sh
